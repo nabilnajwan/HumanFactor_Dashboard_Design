@@ -236,7 +236,7 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
             <a href="index.php" class="active"><i class="fa-solid fa-border-all"></i> Main Dashboard</a>
             <a href="trafficpage.php"><i class="fa-solid fa-car-burst"></i> Traffic & Map</a>
             <a href="transportpage.php"><i class="fa-solid fa-bus-simple"></i> Transit</a>
-            <a href="weather.php"><i class="fa-solid fa-cloud-sun"></i> Weather</a>
+            <a href="weatherpage.php"><i class="fa-solid fa-cloud-sun"></i> Weather</a>
             <a href="alertspage.php"><i class="fa-solid fa-triangle-exclamation"></i> Alerts</a>
         </div>
     </aside>
