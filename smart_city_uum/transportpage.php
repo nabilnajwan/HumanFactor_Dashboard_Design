@@ -7,8 +7,12 @@ $transportRoutes = [
         'path' => 'Stesen Bas → C-Mart → Kolej Universiti → Stesen Bas',
         'scheduled' => '11:15 AM',
         'status' => 'Ongoing',
-        'eta' => 'On Time',
+        'eta' => '11:15 AM',
+        'passenger_load' => 'Medium',
+        'load_color' => '#fec163',
         'color' => '#00ff87',
+        'start_name' => 'Stesen Bas Changlun',
+        'end_name' => 'Kolej Universiti Hub',
         'start_coord' => [6.4310, 100.4290],
         'end_coord' => [6.4215, 100.4230]
     ],
@@ -19,7 +23,11 @@ $transportRoutes = [
         'scheduled' => '11:30 AM',
         'status' => 'Delayed',
         'eta' => '11:48 AM (18m delay)',
+        'passenger_load' => 'High',
+        'load_color' => '#ff4b2b',
         'color' => '#ff4b2b',
+        'start_name' => 'Stesen Bas Changlun',
+        'end_name' => 'UUM Welcome Center',
         'start_coord' => [6.4310, 100.4290],
         'end_coord' => [6.4600, 100.4215]
     ],
@@ -29,8 +37,12 @@ $transportRoutes = [
         'path' => 'Stesen Bas → Bukit Kayu Hitam ICQS',
         'scheduled' => '11:45 AM',
         'status' => 'Ongoing',
-        'eta' => 'On Time',
+        'eta' => '11:45 AM',
+        'passenger_load' => 'Low',
+        'load_color' => '#00ff87',
         'color' => '#00f2fe',
+        'start_name' => 'Stesen Bas Changlun',
+        'end_name' => 'Bukit Kayu Hitam ICQS',
         'start_coord' => [6.4310, 100.4290],
         'end_coord' => [6.4480, 100.4210]
     ],
@@ -40,8 +52,12 @@ $transportRoutes = [
         'path' => 'UUM Changlun Housing → Main Highway Corridor',
         'scheduled' => '11:50 AM',
         'status' => 'Ongoing',
-        'eta' => 'On Time',
+        'eta' => '11:50 AM',
+        'passenger_load' => 'High',
+        'load_color' => '#ff4b2b',
         'color' => '#4facfe',
+        'start_name' => 'UUM Changlun Housing',
+        'end_name' => 'Main Highway Corridor Hub',
         'start_coord' => [6.4250, 100.4340],
         'end_coord' => [6.4380, 100.4260]
     ],
@@ -52,7 +68,11 @@ $transportRoutes = [
         'scheduled' => '12:00 PM',
         'status' => 'Scheduled',
         'eta' => '--',
+        'passenger_load' => 'Low',
+        'load_color' => '#00ff87',
         'color' => '#fec163',
+        'start_name' => 'Stesen Bas Changlun',
+        'end_name' => 'Felda Laka Selatan',
         'start_coord' => [6.4310, 100.4290],
         'end_coord' => [6.4150, 100.4410]
     ]
@@ -80,7 +100,6 @@ foreach ($transportRoutes as $route) {
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<!-- Leaflet Routing Machine CSS Plugin Integration -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 
 <style>
@@ -169,80 +188,118 @@ foreach ($transportRoutes as $route) {
         cursor: pointer; transition: 0.3s ease; font-size: 18px;
     }
     .menu-toggle-btn:hover { background: rgba(0, 242, 254, 0.2); color: var(--primary); border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
-    .topbar h1 { font-size: 26px; font-weight: 700; margin-bottom: 2px; }
+    .topbar h1 { font-size: 24px; font-weight: 700; margin-bottom: 2px; }
     .topbar p { color: var(--muted); margin:0; font-size: 13px;}
     .date-box { padding: 8px 16px; color: var(--primary); font-weight: 600; font-size: 13px; letter-spacing: 1px; border-radius: 12px;}
 
-    /* GRID ARCHITECTURE */
+    /* HORIZONTAL SLIM KPI ROW */
+    .kpi-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+    }
+    .kpi-box {
+        flex: 1;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        border-radius: 14px;
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .kpi-box:hover { transform: translateY(-1px); }
+    .kpi-box::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+    .kpi-ongoing::before { background: var(--success); }
+    .kpi-delay::before { background: var(--danger); }
+    .kpi-total::before { background: var(--primary); }
+
+    .kpi-text-group { display: flex; flex-direction: column; }
+    .kpi-value { font-size: 26px; font-weight: 700; line-height: 1.1; }
+    .kpi-title { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .kpi-icon { font-size: 24px; opacity: 0.4; }
+
+    /* SIDE-BY-SIDE SPLIT WORKSPACE */
     .transit-workspace {
         display: grid;
-        grid-template-columns: 260px 1.2fr 1.2fr;
+        grid-template-columns: 1.2fr 0.8fr; 
         gap: 15px;
         flex: 1;
         min-height: 0;
         margin-bottom: 10px;
     }
 
-    /* COLUMN 1: KPI STACK */
-    .kpi-column {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-    .kpi-box {
-        flex: 1;
-        padding: 22px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        transition: transform 0.3s ease, border-color 0.3s ease;
-    }
-    .kpi-box:hover { transform: translateY(-2px); }
-    .kpi-box::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
-    .kpi-ongoing::before { background: var(--success); }
-    .kpi-ongoing:hover { border-color: rgba(0, 255, 135, 0.3); }
-    .kpi-delay::before { background: var(--danger); }
-    .kpi-delay:hover { border-color: rgba(255, 75, 43, 0.3); }
-    .kpi-total::before { background: var(--primary); }
-    .kpi-total:hover { border-color: rgba(0, 242, 254, 0.3); }
-
-    .kpi-value { font-size: 38px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
-    .kpi-title { font-size: 13px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    .kpi-icon { position: absolute; right: 20px; bottom: 20px; font-size: 36px; opacity: 0.4; transition: opacity 0.3s; }
-    .kpi-box:hover .kpi-icon { opacity: 0.5; }
-
-    /* COLUMN 2: SCHEDULE TABLE */
+    /* COLUMN 1: SCHEDULE TABLE */
     .schedule-column {
         padding: 20px;
         display: flex;
         flex-direction: column;
         min-height: 0;
     }
-    .panel-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;}
+    .panel-header-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        gap: 15px;
+    }
+    .panel-title { font-size: 15px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px;}
+    
+    /* FILTER CONTAINER BUTTONS */
+    .filter-btn-group {
+        display: flex;
+        gap: 6px;
+        background: rgba(15, 23, 42, 0.6);
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .filter-btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+    }
+    .filter-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .filter-btn.active { background: rgba(0, 242, 254, 0.15); color: var(--primary); box-shadow: inset 0 0 8px rgba(0,242,254,0.1); }
+
     .table-container { flex: 1; overflow-y: auto; min-height: 0; padding-right: 4px; }
     
-    .table-container::-webkit-scrollbar, .sidebar-menu::-webkit-scrollbar { width: 6px; }
-    .table-container::-webkit-scrollbar-track, .sidebar-menu::-webkit-scrollbar-track { background: transparent; }
-    .table-container::-webkit-scrollbar-thumb, .sidebar-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    .table-container::-webkit-scrollbar { width: 5px; }
+    .table-container::-webkit-scrollbar-track { background: transparent; }
+    .table-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-    .custom-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+    .custom-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
     .custom-table th { font-size: 11px; text-transform: uppercase; color: var(--muted); padding: 0 12px 2px 12px; font-weight: 600; border: none; letter-spacing: 0.5px; }
-    .custom-table tr { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.02); transition: all 0.2s ease; }
-    .custom-table tr:hover { background: rgba(255, 255, 255, 0.03); transform: scale(1.002); }
-    .custom-table td { padding: 14px 12px; font-size: 13px; vertical-align: middle; border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .custom-table tr { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.02); transition: all 0.2s ease; cursor: pointer; }
+    .custom-table tr:hover { background: rgba(255, 255, 255, 0.04); }
+    .custom-table tr.selected-row { background: rgba(0, 242, 254, 0.08) !important; border: 1px solid rgba(0, 242, 254, 0.3) !important; }
+    .custom-table td { padding: 12px; font-size: 13px; vertical-align: middle; border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
     .custom-table td:first-child { border-left: 1px solid rgba(255,255,255,0.03); border-radius: 12px 0 0 12px; }
     .custom-table td:last-child { border-right: 1px solid rgba(255,255,255,0.03); border-radius: 0 12px 12px 0; }
 
-    .route-badge { background: rgba(0, 242, 254, 0.08); padding: 5px 10px; border-radius: 8px; font-weight: 700; color: var(--primary); font-size: 12px; border: 1px solid rgba(0, 242, 254, 0.15); display: inline-block; min-width: 55px; text-align: center; }
+    .route-badge { background: rgba(0, 242, 254, 0.08); padding: 4px 8px; border-radius: 8px; font-weight: 700; color: var(--primary); font-size: 11px; border: 1px solid rgba(0, 242, 254, 0.15); display: inline-block; min-width: 52px; text-align: center; }
     
-    .status-pill { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-block; text-transform: uppercase; }
+    .status-pill { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; display: inline-block; text-transform: uppercase; }
     .status-pill.ongoing { background: rgba(0, 255, 135, 0.12); color: var(--success); border: 1px solid rgba(0, 255, 135, 0.25); }
     .status-pill.delayed { background: rgba(255, 75, 43, 0.12); color: var(--danger); border: 1px solid rgba(255, 75, 43, 0.25); }
     .status-pill.scheduled { background: rgba(254, 193, 99, 0.12); color: var(--warning); border: 1px solid rgba(254, 193, 99, 0.25); }
 
-    /* COLUMN 3: MAP CONTAINER */
+    .load-indicator { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; width: fit-content; }
+    .load-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* COLUMN 2: MAP CONTAINER */
     .map-column { 
         position: relative; 
         overflow: hidden; 
@@ -254,36 +311,37 @@ foreach ($transportRoutes as $route) {
     }
     
     .map-overlay-title {
-        position: absolute; top: 15px; left: 15px;
+        position: absolute; top: 12px; left: 12px;
         background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 18px; border-radius: 12px;
-        z-index: 1000; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px; pointer-events: none;
+        border: 1px solid rgba(255, 255, 255, 0.15); padding: 8px 14px; border-radius: 10px;
+        z-index: 1000; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px; pointer-events: none;
     }
-    .map-overlay-title h6 { font-size: 13px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
+    .map-overlay-title h6 { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
     
     #transitMap { flex: 1; width: 100%; height: 100%; border-radius: 20px; z-index: 1; }
 
-    /* Hidden element for Leaflet Routing Machine Interface Panels */
     .leaflet-routing-container { display: none !important; }
 
-    .leaflet-tooltip-transit {
-        background: rgba(11, 15, 25, 0.95) !important; border: 1px solid rgba(0, 242, 254, 0.3) !important;
-        color: #fff !important; font-family: 'Outfit', sans-serif !important; font-size: 12px !important;
-        padding: 8px 14px !important; border-radius: 10px !important; box-shadow: var(--shadow) !important;
+    .leaflet-popup-content-wrapper {
+        background: rgba(11, 15, 25, 0.95) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #fff !important; font-family: 'Outfit', sans-serif !important; border-radius: 12px !important;
+        box-shadow: var(--shadow) !important;
     }
+    .leaflet-popup-content { margin: 12px; }
+    .leaflet-popup-tip { background: rgba(11, 15, 25, 0.95) !important; border: 1px solid rgba(255, 255, 255, 0.12); }
 
     /* RESPONSIVENESS BREAKPOINTS */
-    @media(max-width: 1400px) {
-        .transit-workspace { grid-template-columns: 1fr; grid-template-rows: auto 380px 450px; height: auto; overflow: auto; }
+    @media(max-width: 1200px) {
+        .transit-workspace { grid-template-columns: 1fr; grid-template-rows: 400px 450px; height: auto; overflow: auto; }
         body, .dashboard, .main { height: auto; overflow: auto; }
-        .kpi-column { flex-direction: row; }
-        .kpi-box { min-height: 120px; }
         #transitMap { min-height: 450px; }
     }
-    @media(max-width: 900px) {
-        .kpi-column { flex-direction: column; }
+    @media(max-width: 768px) {
+        .kpi-row { flex-direction: column; gap: 10px; }
         .sidebar { position: fixed; margin-left: -260px; height: 100vh; }
         .sidebar.active-mobile { margin-left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        .panel-header-block { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .filter-btn-group { width: 100%; justify-content: space-between; }
     }
 </style>
 </head>
@@ -327,51 +385,73 @@ foreach ($transportRoutes as $route) {
             </div>
         </div>
 
-        <div class="transit-workspace">
-            
-            <div class="kpi-column">
-                <div class="kpi-box glass-panel kpi-ongoing">
+        <div class="kpi-row">
+            <div class="kpi-box glass-panel kpi-ongoing">
+                <div class="kpi-text-group">
                     <div class="kpi-value text-success"><?php echo $ongoingBuses; ?></div>
                     <div class="kpi-title">Buses Active</div>
-                    <i class="fa-solid fa-circle-play kpi-icon text-success"></i>
                 </div>
-                <div class="kpi-box glass-panel kpi-delay">
+                <i class="fa-solid fa-circle-play kpi-icon text-success"></i>
+            </div>
+            <div class="kpi-box glass-panel kpi-delay">
+                <div class="kpi-text-group">
                     <div class="kpi-value text-danger"><?php echo $delayedBuses; ?></div>
                     <div class="kpi-title">Incidents / Delays</div>
-                    <i class="fa-solid fa-triangle-exclamation kpi-icon text-danger"></i>
                 </div>
-                <div class="kpi-box glass-panel kpi-total">
-                    <div class="kpi-value text-info"><?php echo $totalBuses; ?></div>
-                    <div class="kpi-title">Total Monitored Fleet</div>
-                    <i class="fa-solid fa-bus kpi-icon text-info"></i>
-                </div>
+                <i class="fa-solid fa-triangle-exclamation kpi-icon text-danger"></i>
             </div>
-
-            <div class="schedule-column glass-panel">
-                <div class="panel-title text-white">
-                    <i class="fa-solid fa-table-list text-primary"></i> Live Regional Schedules
+            <div class="kpi-box glass-panel kpi-total">
+                <div class="kpi-text-group">
+                    <div class="kpi-value text-info"><?php echo $totalBuses; ?></div>
+                    <div class="kpi-title">Total Fleet</div>
                 </div>
+                <i class="fa-solid fa-bus kpi-icon text-info"></i>
+            </div>
+        </div>
+
+        <div class="transit-workspace">
+            
+            <div class="schedule-column glass-panel">
+                <div class="panel-header-block">
+                    <div class="panel-title text-white">
+                        <i class="fa-solid fa-table-list text-primary"></i> Live Regional Schedules
+                    </div>
+                    <div class="filter-btn-group">
+                        <button class="filter-btn active" onclick="filterTransitTable('all')">All</button>
+                        <button class="filter-btn" onclick="filterTransitTable('ongoing')">Ongoing</button>
+                        <button class="filter-btn" onclick="filterTransitTable('delayed')">Delayed</button>
+                        <button class="filter-btn" onclick="filterTransitTable('scheduled')">Scheduled</button>
+                    </div>
+                </div>
+
                 <div class="table-container">
-                    <table class="custom-table">
+                    <table class="custom-table" id="schedulesTable">
                         <thead>
                             <tr>
-                                <th style="width: 15%">ID</th>
-                                <th style="width: 55%">Transit Corridor Route</th>
-                                <th style="width: 30%">Status / ETA</th>
+                                <th style="width: 12%">ID</th>
+                                <th style="width: 48%">Transit Corridor Route</th>
+                                <th style="width: 20%">Passenger Load</th>
+                                <th style="width: 20%">Status / ETA</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($transportRoutes as $route): 
+                            <?php foreach ($transportRoutes as $index => $route): 
                                 $statusClass = strtolower($route['status']);
                                 $textStatusColor = '';
                                 if($statusClass === 'delayed') $textStatusColor = 'text-danger';
                                 if($statusClass === 'ongoing') $textStatusColor = 'text-success';
                             ?>
-                                <tr>
+                                <tr data-status="<?php echo $statusClass; ?>" onclick="focusRouteLine('<?php echo $route['route']; ?>', this)">
                                     <td><span class="route-badge" style="border-color: <?php echo $route['color']; ?>33; color: <?php echo $route['color']; ?>;"><?php echo htmlspecialchars($route['route']); ?></span></td>
                                     <td>
                                         <div class="text-white fw-semibold" style="font-size:13px;"><?php echo htmlspecialchars($route['name']); ?></div>
                                         <div class="text-white" style="font-size:11px; margin-top:2px;"><i class="fa-solid fa-angle-right me-1 text-primary"></i> <?php echo htmlspecialchars($route['path']); ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="load-indicator" style="background: <?php echo $route['load_color']; ?>15; color: <?php echo $route['load_color']; ?>;">
+                                            <span class="load-dot" style="background-color: <?php echo $route['load_color']; ?>;"></span>
+                                            <?php echo $route['passenger_load']; ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="status-pill <?php echo $statusClass; ?> mb-1">
@@ -402,7 +482,6 @@ foreach ($transportRoutes as $route) {
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Leaflet Routing Machine Core JS Engine Implementation -->
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
 <script>
@@ -418,8 +497,11 @@ foreach ($transportRoutes as $route) {
         setTimeout(() => { map.invalidateSize(); }, 400); 
     });
 
-    // Center map over Changlun Main Interchange Node
-    var map = L.map('transitMap', { zoomControl: false }).setView([6.4310, 100.4290], 14);
+    // Default map coordinates center
+    const DEFAULT_CENTER = [6.4310, 100.4290];
+    const DEFAULT_ZOOM = 13;
+
+    var map = L.map('transitMap', { zoomControl: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap', subdomains: 'abcd', maxZoom: 19
@@ -427,7 +509,16 @@ foreach ($transportRoutes as $route) {
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // Dynamic Fleet Custom Div Icon Generator
+    function createStationIcon() {
+        return L.divIcon({
+            className: 'station-marker',
+            html: `<div style="background: rgba(11, 23, 42, 0.9); border: 2px solid var(--primary); width: 14px; height: 14px; border-radius: 4px; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 10px #00f2fe;">
+                    <div style="background: #00f2fe; width:6px; height:6px; border-radius:1px;"></div>
+                   </div>`,
+            iconSize: [14, 14], iconAnchor: [7, 7]
+        });
+    }
+
     function createBusMarker(color, label) {
         return L.divIcon({
             className: 'custom-transit-marker',
@@ -439,82 +530,151 @@ foreach ($transportRoutes as $route) {
         });
     }
 
-    // Capture explicit backend routing profiles to process inside JavaScript Engine
     const PHP_ROUTES = <?php echo json_encode($transportRoutes); ?>;
-    
-    // Core telemetry loop array containing runtime simulation markers
     let liveFleetTelemetry = [];
+    let mapRouteRegistry = {}; 
+    let activeHighlightLine = null; 
+    let currentSelectedRouteId = null;
 
     PHP_ROUTES.forEach((routeData) => {
-        // Exclude completely stationary/scheduled lines from tracking
+        if (routeData.start_coord) {
+            L.marker(routeData.start_coord, { icon: createStationIcon() })
+             .addTo(map)
+             .bindPopup(`<div style="color:#fff; font-family:'Outfit'; font-size:12px;"><i class="fa-solid fa-building-flag text-info me-2"></i><b>Station Hub:</b> ${routeData.start_name || 'Origin Terminal'}</div>`);
+        }
+        if (routeData.end_coord) {
+            L.marker(routeData.end_coord, { icon: createStationIcon() })
+             .addTo(map)
+             .bindPopup(`<div style="color:#fff; font-family:'Outfit'; font-size:12px;"><i class="fa-solid fa-flag-checkered text-warning me-2"></i><b>Station Hub:</b> ${routeData.end_name || 'Destination Hub'}</div>`);
+        }
+
         if (routeData.status.toLowerCase() === 'scheduled') return;
 
-        // Instantiation of the Leaflet Routing Engine targeting the real-world Changlun road infrastructure
         let routingControl = L.Routing.control({
             waypoints: [
                 L.latLng(routeData.start_coord[0], routeData.start_coord[1]),
                 L.latLng(routeData.end_coord[0], routeData.end_coord[1])
             ],
-            router: L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1' // Queries OpenStreetMap topology structures
-            }),
+            router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
             lineOptions: {
-                styles: [{ color: routeData.color, opacity: 0.4, weight: 4, dashArray: '6, 8' }]
+                styles: [{ color: routeData.color, opacity: 0.35, weight: 3.5, dashArray: '5, 8' }]
             },
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: false
+            addWaypoints: false, draggableWaypoints: false, fitSelectedRoutes: false
         }).addTo(map);
 
-        // Once the real-road network coordinates calculation concludes, kick off real-time telemetry animation
         routingControl.on('routesfound', function(e) {
             let routes = e.routes;
-            let realRoadCoordinates = routes[0].coordinates; // Exact mapped curve parameters
+            let realRoadCoordinates = routes[0].coordinates;
             
-            // Generate telemetry marker instance inside space
             let vehicleMarker = L.marker(realRoadCoordinates[0], {
                 icon: createBusMarker(routeData.color, routeData.route)
             }).addTo(map);
 
-            // Bind informative modal dialog popups
             vehicleMarker.bindPopup(`
-                <div style="color: #fff; font-family:'Outfit'; padding:2px;">
+                <div style="color: #fff; font-family:'Outfit'; padding:2px; min-width:140px;">
                     <strong style="color:${routeData.color}; font-size:14px;">Bus ${routeData.route}</strong><br>
                     <small style="color:#94a3b8;">${routeData.name}</small><br>
                     <hr style="border-top:1px solid rgba(255,255,255,0.1); margin:6px 0;">
+                    <b>Passenger Load:</b> ${routeData.passenger_load}<br>
                     <b>Status:</b> ${routeData.status}<br>
                     <b>ETA:</b> ${routeData.eta}
                 </div>
             `);
 
-            liveFleetTelemetry.push({
+            let telemetryObject = {
+                id: routeData.route,
                 marker: vehicleMarker,
+                color: routeData.color,
                 coords: realRoadCoordinates,
-                currentIndex: Math.floor(Math.random() * (realRoadCoordinates.length / 2)), // Scatter variations on initialize
-                speedFactor: routeData.status.toLowerCase() === 'delayed' ? 0.2 : 0.5, // KNOB 1: Step sizing per tick (lower is slower)
-                direction: 1 // 1 = forward route direction, -1 = reverse back to origin
-            });
+                currentIndex: Math.floor(Math.random() * (realRoadCoordinates.length / 2)),
+                speedFactor: routeData.status.toLowerCase() === 'delayed' ? 0.2 : 0.5,
+                direction: 1
+            };
+
+            liveFleetTelemetry.push(telemetryObject);
+            mapRouteRegistry[routeData.route] = telemetryObject;
         });
     });
 
-    // Simulated Central GPS Engine ticking at regular intervals for asset rendering
+    // TABLE JAVASCRIPT FILTER ENGINE
+    function filterTransitTable(statusCriterion) {
+        // Handle tab active color styling switching
+        const targetButtons = document.querySelectorAll('.filter-btn');
+        targetButtons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        const rows = document.querySelectorAll('#schedulesTable tbody tr');
+        rows.forEach(row => {
+            let rowStatus = row.getAttribute('data-status');
+            if (statusCriterion === 'all' || rowStatus === statusCriterion) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function focusRouteLine(routeId, elementRow) {
+        if (currentSelectedRouteId === routeId) {
+            elementRow.classList.remove('selected-row');
+            if (activeHighlightLine) {
+                map.removeLayer(activeHighlightLine);
+                activeHighlightLine = null;
+            }
+            let currentBus = mapRouteRegistry[routeId];
+            if (currentBus && currentBus.marker) {
+                currentBus.marker.closePopup();
+            }
+            currentSelectedRouteId = null;
+            map.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true, duration: 0.6 });
+            return;
+        }
+
+        document.querySelectorAll('#schedulesTable tbody tr').forEach(tr => tr.classList.remove('selected-row'));
+        elementRow.classList.add('selected-row');
+
+        if (activeHighlightLine) {
+            map.removeLayer(activeHighlightLine);
+            activeHighlightLine = null;
+        }
+
+        let targetBus = mapRouteRegistry[routeId];
+        if (targetBus && targetBus.coords.length > 0) {
+            currentSelectedRouteId = routeId;
+
+            activeHighlightLine = L.polyline(targetBus.coords, {
+                color: targetBus.color,
+                weight: 6,
+                opacity: 0.95
+            }).addTo(map);
+            
+            activeHighlightLine.bringToFront();
+            targetBus.marker.bringToFront();
+
+            let currentLoc = targetBus.marker.getLatLng();
+            map.setView(currentLoc, 14, { animate: true, duration: 0.5 });
+            
+            setTimeout(() => {
+                if (currentSelectedRouteId === routeId) {
+                    targetBus.marker.openPopup();
+                }
+            }, 350);
+        }
+    }
+
+    // Dynamic telemetry engine tracking simulation loop
     setInterval(() => {
         liveFleetTelemetry.forEach((vehicle) => {
-            // Adjust step array positioning dynamically based on direction coefficient
             vehicle.currentIndex += (vehicle.speedFactor * vehicle.direction);
             
-            // Forward edge checking bounding parameters
             if (vehicle.currentIndex >= vehicle.coords.length - 1) {
                 vehicle.currentIndex = vehicle.coords.length - 1;
-                vehicle.direction = -1; // Toggle direction vector backwards
-            } 
-            // Backward coordinate limit bounding parameters
-            else if (vehicle.currentIndex <= 0) {
+                vehicle.direction = -1; 
+            } else if (vehicle.currentIndex <= 0) {
                 vehicle.currentIndex = 0;
-                vehicle.direction = 1; // Toggle direction vector forward
+                vehicle.direction = 1; 
             }
 
-            // Target mapping node parsing index assignment
             let roundedIndex = Math.floor(vehicle.currentIndex);
             let nextNodePosition = vehicle.coords[roundedIndex];
             
@@ -522,7 +682,7 @@ foreach ($transportRoutes as $route) {
                 vehicle.marker.setLatLng([nextNodePosition.lat, nextNodePosition.lng]);
             }
         });
-    }, 100); // KNOB 2: Refresh clock ticks in ms (higher value is slower execution)
+    }, 100);
 </script>
 
 </body>
