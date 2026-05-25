@@ -109,12 +109,74 @@ function badgeClass(string $value): string {
     .cctv-sidebar { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 5px; }
     .cctv-sidebar::-webkit-scrollbar { width: 6px; }
     .cctv-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-    .cctv-card { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; flex-shrink: 0; }
+    .cctv-card { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; flex-shrink: 0; cursor: pointer; transition: all 0.25s ease; }
+    .cctv-card:hover { border-color: rgba(0, 242, 254, 0.45); background: rgba(0, 242, 254, 0.06); transform: translateY(-2px); }
+    .cctv-card.is-focused { border-color: var(--success); box-shadow: 0 0 18px rgba(0, 255, 135, 0.25); }
     .cctv-screen { height: 140px; border-radius: 8px; background: #000; position: relative; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; }
     .cctv-video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(80%) contrast(120%) brightness(70%) sepia(20%) hue-rotate(180deg); }
     .cctv-screen::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 3px); pointer-events: none; }
     .live-badge { position: absolute; top: 6px; left: 6px; z-index: 2; background: rgba(255, 75, 43, 0.9); color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
     .live-dot { width: 5px; height: 5px; background: white; border-radius: 50%; animation: blink 1s infinite; }
+    .camera-focus-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        background: rgba(3, 7, 18, 0.82);
+        backdrop-filter: blur(12px);
+    }
+    .camera-focus-overlay.active { display: flex; }
+    .camera-focus-panel {
+        width: min(960px, 92vw);
+        max-height: 88vh;
+        background: rgba(11, 15, 25, 0.96);
+        border: 1px solid rgba(0, 242, 254, 0.28);
+        border-radius: 18px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 28px rgba(0, 242, 254, 0.14);
+        overflow: hidden;
+    }
+    .camera-focus-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .camera-focus-title { min-width: 0; }
+    .camera-focus-title h3 { margin: 0 0 2px; font-size: 16px; font-weight: 700; color: var(--text); }
+    .camera-focus-title span { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .camera-focus-close {
+        width: 38px;
+        height: 38px;
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 10px;
+        background: rgba(255,255,255,0.06);
+        color: var(--text);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .camera-focus-close:hover { background: rgba(255, 75, 43, 0.2); color: var(--danger); border-color: rgba(255, 75, 43, 0.45); }
+    .camera-focus-screen {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        max-height: 68vh;
+    }
+    .camera-focus-screen video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+    .camera-focus-screen::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.09) 1px, transparent 1px, transparent 4px);
+        pointer-events: none;
+    }
+    .camera-focus-screen .live-badge { top: 12px; left: 12px; font-size: 11px; padding: 4px 9px; }
     @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
     /* DETAILED TRAFFIC TABLE */
@@ -161,7 +223,7 @@ function badgeClass(string $value): string {
 
     <aside class="sidebar" id="appSidebar">
          <div class="brand">
-            <div class="brand-logo"><i class="fa-solid fa-cloud-bolt"></i></div>
+            <div class="brand-logo"><i class="fa-solid fa-car"></i></div>
             <div>
                 <h4>Changlun City</h4>
                 <span>Command Center</span>
@@ -170,7 +232,7 @@ function badgeClass(string $value): string {
 
         <div class="sidebar-menu">
             <a href="index.php"><i class="fa-solid fa-border-all"></i> Main Dashboard</a>
-            <a href="trafficpage.php" class="active"><i class="fa-solid fa-car-burst"></i> Traffic & Map</a>
+            <a href="trafficpage.php" class="active"><i class="fa-solid fa-car-burst"></i> Traffic</a>
             <a href="transportpage.php"><i class="fa-solid fa-bus-simple"></i> Transit</a>
             <a href="weatherpage.php"><i class="fa-solid fa-cloud-sun"></i> Weather</a>
             <a href="alertspage.php"><i class="fa-solid fa-triangle-exclamation"></i> Alerts</a>
@@ -213,7 +275,7 @@ function badgeClass(string $value): string {
                 <h3 style="font-size: 16px; margin-bottom: 10px;"><i class="fa-solid fa-video text-success me-2"></i>Road Cams</h3>
                 
                 <?php for($i=0; $i<2; $i++): $feed = $cctvFeeds[$i]; ?>
-                    <div class="cctv-card">
+                    <div class="cctv-card" tabindex="0" role="button" aria-label="Open focused camera feed for <?php echo htmlspecialchars($feed['location']); ?>">
                         <div class="cctv-screen">
                             <video class="cctv-video" autoplay loop muted playsinline>
                                 <source src="<?php echo htmlspecialchars($feed['video_url']); ?>" type="video/mp4">
@@ -277,6 +339,24 @@ function badgeClass(string $value): string {
     </main>
 </div>
 
+<div class="camera-focus-overlay" id="cameraFocusOverlay" aria-hidden="true">
+    <div class="camera-focus-panel" role="dialog" aria-modal="true" aria-labelledby="cameraFocusTitle">
+        <div class="camera-focus-header">
+            <div class="camera-focus-title">
+                <h3 id="cameraFocusTitle">Road Camera</h3>
+                <span id="cameraFocusActivity">Live feed</span>
+            </div>
+            <button type="button" class="camera-focus-close" id="cameraFocusClose" aria-label="Close focused camera feed">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="camera-focus-screen">
+            <video id="cameraFocusVideo" autoplay loop muted playsinline></video>
+            <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     // DRAWER MENU LOGIC
@@ -324,6 +404,59 @@ function badgeClass(string $value): string {
     
     L.marker([6.4350, 100.4150], {icon: bypassIcon}).addTo(map)
      .bindPopup('<b style="color:#00ff87;">Suggested Bypass</b><br>Route via Jalan Lama (Clear flow).');
+
+    const cameraFocusOverlay = document.getElementById('cameraFocusOverlay');
+    const cameraFocusClose = document.getElementById('cameraFocusClose');
+    const cameraFocusVideo = document.getElementById('cameraFocusVideo');
+    const cameraFocusTitle = document.getElementById('cameraFocusTitle');
+    const cameraFocusActivity = document.getElementById('cameraFocusActivity');
+
+    function openFocusedCamera(card) {
+        const videoSource = card.querySelector('source');
+        const location = card.querySelector('strong');
+        const activity = card.querySelector('.text-secondary');
+
+        document.querySelectorAll('.cctv-card').forEach(item => item.classList.remove('is-focused'));
+        card.classList.add('is-focused');
+
+        cameraFocusVideo.src = videoSource ? videoSource.src : '';
+        cameraFocusTitle.textContent = location ? location.textContent.trim() : 'Road Camera';
+        cameraFocusActivity.textContent = activity ? activity.textContent.trim() : 'Live feed';
+        cameraFocusOverlay.classList.add('active');
+        cameraFocusOverlay.setAttribute('aria-hidden', 'false');
+        cameraFocusVideo.play();
+    }
+
+    function closeFocusedCamera() {
+        cameraFocusOverlay.classList.remove('active');
+        cameraFocusOverlay.setAttribute('aria-hidden', 'true');
+        cameraFocusVideo.pause();
+        cameraFocusVideo.removeAttribute('src');
+        cameraFocusVideo.load();
+        document.querySelectorAll('.cctv-card').forEach(item => item.classList.remove('is-focused'));
+    }
+
+    document.querySelectorAll('.cctv-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            openFocusedCamera(this);
+        });
+        card.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openFocusedCamera(this);
+            }
+        });
+    });
+
+    cameraFocusClose.addEventListener('click', closeFocusedCamera);
+    cameraFocusOverlay.addEventListener('click', function(event) {
+        if (event.target === cameraFocusOverlay) closeFocusedCamera();
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && cameraFocusOverlay.classList.contains('active')) {
+            closeFocusedCamera();
+        }
+    });
 
 </script>
 

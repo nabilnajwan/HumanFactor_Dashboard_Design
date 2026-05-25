@@ -441,6 +441,10 @@ function patrolStatusClass(string $status): string {
     }
     .cctv-surveillance.expanded .cctv-monitor.cctv-expanded .cctv-monitor-screen { flex: 1; height: auto; min-height: 0; }
     .cctv-surveillance.expanded .cctv-monitor.cctv-expanded video { object-fit: contain; }
+    .cctv-surveillance.expanded .cctv-monitor.cctv-expanded video {
+        filter: none; /* Remove grainy filter for clearer incident inspection */
+        box-shadow: inset 0 0 100px rgba(0, 255, 135, 0.1);
+    }
     .cctv-surveillance.expanded .cctv-monitor.cctv-expanded .cctv-info {
         position: absolute; bottom: 0; left: 0; right: 0;
         background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 30px 20px 15px; z-index: 10;
@@ -494,7 +498,7 @@ function patrolStatusClass(string $status): string {
     .alerts-list {
         overflow-y: auto;
         flex: 1;
-        padding: 8px;
+        padding: 7px;
     }
     .alerts-list::-webkit-scrollbar { width: 4px; }
     .alerts-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
@@ -502,9 +506,9 @@ function patrolStatusClass(string $status): string {
     .alert-card {
         background: rgba(0, 0, 0, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 12px;
-        margin-bottom: 8px;
+        border-radius: 12px;
+        padding: 9px 10px 9px 12px;
+        margin-bottom: 6px;
         transition: all 0.3s ease;
         cursor: pointer;
         position: relative;
@@ -517,10 +521,13 @@ function patrolStatusClass(string $status): string {
         top: 0;
         bottom: 0;
         width: 4px;
-        border-radius: 14px 0 0 14px;
+        border-radius: 12px 0 0 12px;
     }
+    .alert-card.critical { border-color: rgba(255, 0, 64, 0.4); }
     .alert-card.critical::before { background: var(--critical); box-shadow: 0 0 15px rgba(255, 0, 64, 0.5); }
+    .alert-card.warning { border-color: rgba(254, 193, 99, 0.4); }
     .alert-card.warning::before { background: var(--warning); box-shadow: 0 0 15px rgba(254, 193, 99, 0.5); }
+    .alert-card.notice { border-color: rgba(0, 242, 254, 0.4); }
     .alert-card.notice::before { background: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 254, 0.5); }
 
     .alert-card.alert-cam-highlight {
@@ -538,14 +545,139 @@ function patrolStatusClass(string $status): string {
     .alert-card.critical:hover { background: rgba(255, 0, 64, 0.08); }
     .alert-card.warning:hover { background: rgba(254, 193, 99, 0.08); }
 
-    .alert-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-    .alert-type { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
-    .alert-time { font-size: 10px; color: var(--muted); }
-    .alert-location { font-size: 12px; color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
-    .alert-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
-    .alert-id { font-size: 9px; color: rgba(255,255,255,0.3); margin-top: 6px; }
+    .alert-card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .alert-type { min-width: 0; font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; line-height: 1.2; }
+    .alert-type i { flex-shrink: 0; font-size: 11px; }
+    .alert-time { font-size: 9px; color: var(--muted); white-space: nowrap; }
+    .alert-location { font-size: 11px; color: var(--primary); margin-bottom: 2px; display: flex; align-items: center; gap: 5px; line-height: 1.2; }
+    .alert-desc { font-size: 10px; color: var(--muted); line-height: 1.25; }
+    .alert-id { font-size: 9px; color: rgba(255,255,255,0.35); white-space: nowrap; }
+    .alert-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 7px;
+    }
+    .alert-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+    .alert-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 7px;
+        min-width: 0;
+        flex: 1;
+    }
+    .dispatch-btn {
+        background: rgba(0, 255, 135, 0.12);
+        border: 1px solid rgba(0, 255, 135, 0.35);
+        color: var(--success);
+        border-radius: 7px;
+        min-height: 25px;
+        padding: 4px 8px;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.25px;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .dispatch-btn:hover {
+        background: rgba(0, 255, 135, 0.22);
+        box-shadow: 0 0 14px rgba(0, 255, 135, 0.22);
+        transform: translateY(-1px);
+    }
+    .dispatch-btn:disabled {
+        cursor: default;
+        color: #08130d;
+        background: var(--success);
+        border-color: var(--success);
+        box-shadow: 0 0 16px rgba(0, 255, 135, 0.24);
+        transform: none;
+    }
+    .dispatch-response {
+        flex: 1;
+        min-width: 0;
+        color: var(--success);
+        font-size: 9px;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: all 0.25s ease;
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .alert-card.dispatched {
+        border-color: rgba(0, 255, 135, 0.45) !important;
+        background: rgba(0, 255, 135, 0.06);
+    }
+    .alert-card.dispatched::before {
+        background: var(--success) !important;
+        box-shadow: 0 0 15px rgba(0, 255, 135, 0.5) !important;
+    }
+    .alert-card.dispatched .dispatch-response {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .dispatch-sent-label {
+        display: none;
+        align-items: center;
+        gap: 4px;
+        color: var(--success);
+        background: rgba(0, 255, 135, 0.12);
+        border: 1px solid rgba(0, 255, 135, 0.28);
+        border-radius: 20px;
+        padding: 2px 7px;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .alert-card.dispatched .dispatch-sent-label {
+        display: inline-flex;
+    }
+    .dispatch-snackbar {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 210px;
+        max-width: calc(100vw - 44px);
+        padding: 11px 14px;
+        border-radius: 10px;
+        color: #08130d;
+        background: var(--success);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 18px rgba(0, 255, 135, 0.24);
+        font-size: 12px;
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .dispatch-snackbar.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
     .alert-badge {
-        padding: 3px 8px; border-radius: 20px; font-size: 9px; font-weight: 700;
+        flex-shrink: 0;
+        padding: 2px 7px; border-radius: 20px; font-size: 8px; font-weight: 700;
         text-transform: uppercase; letter-spacing: 0.5px;
     }
     .alert-badge.critical { background: rgba(255, 0, 64, 0.2); color: #ff4d79; border: 1px solid rgba(255, 0, 64, 0.4); animation: pulse-critical 2s infinite; }
@@ -638,7 +770,7 @@ function patrolStatusClass(string $status): string {
 
         <div class="sidebar-menu">
             <a href="index.php"><i class="fa-solid fa-border-all"></i> Main Dashboard</a>
-            <a href="trafficpage.php"><i class="fa-solid fa-car-burst"></i> Traffic & Map</a>
+            <a href="trafficpage.php"><i class="fa-solid fa-car-burst"></i> Traffic</a>
             <a href="transportpage.php"><i class="fa-solid fa-bus-simple"></i> Transit</a>
             <a href="weatherpage.php"><i class="fa-solid fa-cloud-sun"></i> Weather</a>
             <a href="alertspage.php" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Alerts</a>
@@ -764,9 +896,19 @@ function patrolStatusClass(string $status): string {
                             </div>
                             <div class="alert-location"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($alert['location']); ?></div>
                             <div class="alert-desc"><?php echo htmlspecialchars($alert['description']); ?></div>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <span class="alert-time"><i class="fa-regular fa-clock me-1"></i> <?php echo htmlspecialchars($alert['time']); ?></span>
-                                <span class="alert-id">#<?php echo htmlspecialchars($alert['id']); ?></span>
+                            <div class="alert-footer">
+                                <div class="alert-meta">
+                                    <span class="alert-time"><i class="fa-regular fa-clock me-1"></i><?php echo htmlspecialchars($alert['time']); ?></span>
+                                    <span class="alert-id">#<?php echo htmlspecialchars($alert['id']); ?></span>
+                                </div>
+                                <div class="alert-actions">
+                                    <span class="dispatch-sent-label"><i class="fa-solid fa-check"></i> Dispatch Sent</span>
+                                    <div class="dispatch-response" aria-live="polite"></div>
+                                    <button type="button" class="dispatch-btn" data-alert-id="<?php echo htmlspecialchars($alert['id']); ?>">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                        Dispatch
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -802,6 +944,11 @@ function patrolStatusClass(string $status): string {
         </div>
 
     </main>
+</div>
+
+<div class="dispatch-snackbar" id="dispatchSnackbar" role="status" aria-live="polite">
+    <i class="fa-solid fa-check-circle"></i>
+    <span>Dispatch sent</span>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -860,12 +1007,6 @@ function patrolStatusClass(string $status): string {
         var container = document.getElementById('cctvSurveillance');
         var monitors = container.querySelectorAll('.cctv-monitor');
         
-        // If already expanded on this index, collapse it
-        if (monitors[index] && monitors[index].classList.contains('cctv-expanded')) {
-            collapseCctv();
-            return;
-        }
-
         monitors.forEach(function(m) { m.classList.remove('cctv-expanded'); });
         container.classList.remove('expanded');
         document.querySelectorAll('.alert-card').forEach(function(c) { c.classList.remove('alert-cam-highlight'); });
@@ -924,6 +1065,40 @@ function patrolStatusClass(string $status): string {
     function interpolate(start, end, t) { return [start[0] + (end[0] - start[0]) * t, start[1] + (end[1] - start[1]) * t]; }
     function distance(p1, p2) { return Math.sqrt(Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2)); }
 
+    var dispatchUnits = ['PV-01', 'PV-02', 'PV-03'];
+    var dispatchSnackbarTimer;
+
+    function showDispatchSnackbar(message) {
+        var snackbar = document.getElementById('dispatchSnackbar');
+        snackbar.querySelector('span').textContent = message;
+        snackbar.classList.add('show');
+
+        clearTimeout(dispatchSnackbarTimer);
+        dispatchSnackbarTimer = setTimeout(function() {
+            snackbar.classList.remove('show');
+        }, 2200);
+    }
+
+    document.addEventListener('click', function(event) {
+        var button = event.target.closest('.dispatch-btn');
+        if (!button) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        var card = button.closest('.alert-card');
+        var response = card.querySelector('.dispatch-response');
+        var buttonIndex = Array.prototype.indexOf.call(document.querySelectorAll('.dispatch-btn'), button);
+        var unit = dispatchUnits[buttonIndex % dispatchUnits.length];
+        var eta = card.classList.contains('critical') ? '3 min' : (card.classList.contains('warning') ? '5 min' : '7 min');
+
+        card.classList.add('dispatched');
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-check"></i> Dispatch Sent';
+        response.innerHTML = '<i class="fa-solid fa-car-side me-1"></i>' + unit + ' responding, ETA ' + eta;
+        showDispatchSnackbar('Dispatch sent for ' + button.dataset.alertId);
+    });
+
     function animatePatrols() {
         var now = Date.now(); var deltaTime = (now - lastUpdate) / 1000; lastUpdate = now;
         Object.keys(patrolRoutes).forEach(function(unitId) {
@@ -938,14 +1113,25 @@ function patrolStatusClass(string $status): string {
             marker.setLatLng(np);
             var tl = trail.getLatLngs(); tl.push(L.latLng(np[0], np[1]));
             if (tl.length > 50) tl = tl.slice(-50);
-            trail.setLatLngs(tl); marker.setPopupOpacity(0);
+            trail.setLatLngs(tl);
         });
         animationFrame = requestAnimationFrame(animatePatrols);
     }
     animatePatrols();
 
     document.querySelectorAll('.alert-card').forEach(function(card) {
-        card.addEventListener('click', function() { map.setView([parseFloat(this.dataset.lat), parseFloat(this.dataset.lng)], 16); });
+        card.addEventListener('click', function() { 
+            // Focus map
+            map.setView([parseFloat(this.dataset.lat), parseFloat(this.dataset.lng)], 16); 
+            
+            // Highlight selected card
+            document.querySelectorAll('.alert-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+
+            // Focus CCTV
+            var camIdx = parseInt(this.dataset.cam);
+            if (camIdx !== -1) expandCamera(camIdx);
+        });
     });
 
     document.getElementById('patrolCount').textContent = Object.keys(patrolMarkers).length;

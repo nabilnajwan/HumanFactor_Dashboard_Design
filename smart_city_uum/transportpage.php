@@ -87,6 +87,19 @@ foreach ($transportRoutes as $route) {
     if (strtolower($route['status']) === 'delayed') $delayedBuses++;
     if (strtolower($route['status']) === 'ongoing') $ongoingBuses++;
 }
+
+// Analytics Mock History for Majlis Bandaraya Reporting
+$analyticsHours = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+$loadDataHigh = [45, 88, 65, 35, 42, 70, 78, 40, 44, 62, 95, 50]; // Rush hour tracking
+$loadDataMedium = [20, 45, 30, 25, 28, 40, 55, 30, 35, 48, 60, 30];
+
+$routeDelayMinutes = [
+    'T23' => 4,
+    'K40' => 18,
+    'T24' => 2,
+    'GB01' => 5,
+    'K42' => 0
+];
 ?>
 
 <!DOCTYPE html>
@@ -176,7 +189,7 @@ foreach ($transportRoutes as $route) {
         flex-direction: column; 
         height: 100vh; 
         min-width: 0; 
-        overflow: hidden; 
+        overflow-y: auto; 
     }
 
     /* TOPBAR */
@@ -221,13 +234,32 @@ foreach ($transportRoutes as $route) {
     .kpi-title { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
     .kpi-icon { font-size: 24px; opacity: 0.4; }
 
-    /* SIDE-BY-SIDE SPLIT WORKSPACE */
+    /* PRIORITY 1: MUNICIPAL ANALYTICS ROW */
+    .analytics-row {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 15px;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+    }
+    .analytics-card {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+    }
+    .chart-wrapper {
+        position: relative;
+        height: 190px;
+        width: 100%;
+    }
+
+    /* PRIORITY 2: SIDE-BY-SIDE SPLIT WORKSPACE */
     .transit-workspace {
         display: grid;
-        grid-template-columns: 1.2fr 0.8fr; 
+        grid-template-columns: 1.1fr 0.9fr; 
         gap: 15px;
         flex: 1;
-        min-height: 0;
+        min-height: 380px;
         margin-bottom: 10px;
     }
 
@@ -248,7 +280,7 @@ foreach ($transportRoutes as $route) {
         margin-bottom: 10px;
         gap: 15px;
     }
-    .panel-title { font-size: 15px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px;}
+    .panel-title { font-size: 14px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 10px;}
     
     /* FILTER CONTAINER BUTTONS */
     .filter-btn-group {
@@ -275,7 +307,6 @@ foreach ($transportRoutes as $route) {
     .filter-btn.active { background: rgba(0, 242, 254, 0.15); color: var(--primary); box-shadow: inset 0 0 8px rgba(0,242,254,0.1); }
 
     .table-container { flex: 1; overflow-y: auto; min-height: 0; padding-right: 4px; }
-    
     .table-container::-webkit-scrollbar { width: 5px; }
     .table-container::-webkit-scrollbar-track { background: transparent; }
     .table-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
@@ -332,9 +363,10 @@ foreach ($transportRoutes as $route) {
 
     /* RESPONSIVENESS BREAKPOINTS */
     @media(max-width: 1200px) {
-        .transit-workspace { grid-template-columns: 1fr; grid-template-rows: 400px 450px; height: auto; overflow: auto; }
-        body, .dashboard, .main { height: auto; overflow: auto; }
-        #transitMap { min-height: 450px; }
+        .analytics-row { grid-template-columns: 1fr; }
+        .transit-workspace { grid-template-columns: 1fr; height: auto; }
+        body { overflow-y: auto; height: auto; }
+        #transitMap { min-height: 400px; }
     }
     @media(max-width: 768px) {
         .kpi-row { flex-direction: column; gap: 10px; }
@@ -361,7 +393,7 @@ foreach ($transportRoutes as $route) {
 
         <div class="sidebar-menu">
             <a href="index.php"><i class="fa-solid fa-border-all"></i> Main Dashboard</a>
-            <a href="trafficpage.php"><i class="fa-solid fa-car-burst"></i> Traffic & Map</a>
+            <a href="trafficpage.php"><i class="fa-solid fa-car-burst"></i> Traffic</a>
             <a href="transportpage.php" class="active"><i class="fa-solid fa-bus-simple"></i> Transit</a>
             <a href="weatherpage.php"><i class="fa-solid fa-cloud-sun"></i> Weather</a>
             <a href="alertspage.php"><i class="fa-solid fa-triangle-exclamation"></i> Alerts</a>
@@ -377,7 +409,7 @@ foreach ($transportRoutes as $route) {
                 </button>
                 <div>
                     <h1>Transit Management</h1>
-                    <p>Live Fleet Telemetry & Real Road Corridors</p>
+                    <p>Live Fleet Telemetry & Municipal Resource Analytics</p>
                 </div>
             </div>
             <div class="date-box glass-panel">
@@ -385,6 +417,7 @@ foreach ($transportRoutes as $route) {
             </div>
         </div>
 
+        <!-- KPI OVERVIEW -->
         <div class="kpi-row">
             <div class="kpi-box glass-panel kpi-ongoing">
                 <div class="kpi-text-group">
@@ -409,6 +442,27 @@ foreach ($transportRoutes as $route) {
             </div>
         </div>
 
+        <!-- PRIORITY 1: MUNICIPAL ANALYTICS HUB -->
+        <div class="analytics-row">
+            <div class="analytics-card glass-panel">
+                <div class="panel-title text-white mb-2">
+                    <i class="fa-solid fa-chart-line text-primary"></i>Hourly Peak Passenger Load
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="passengerLoadChart"></canvas>
+                </div>
+            </div>
+            <div class="analytics-card glass-panel">
+                <div class="panel-title text-white mb-2">
+                    <i class="fa-solid fa-chart-bar text-danger"></i> Route Punctuality & Delay Metrics
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="routePunctualityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRIORITY 2: OPERATIONAL SPLIT WORKSPACE -->
         <div class="transit-workspace">
             
             <div class="schedule-column glass-panel">
@@ -481,10 +535,13 @@ foreach ($transportRoutes as $route) {
     </main>
 </div>
 
+<!-- Scripts Delivery -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
 <script>
+    // Sidebar Workspace Collapsing Logic
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebar = document.getElementById('appSidebar');
 
@@ -497,7 +554,70 @@ foreach ($transportRoutes as $route) {
         setTimeout(() => { map.invalidateSize(); }, 400); 
     });
 
-    // Default map coordinates center
+    // --- CHART IMPLEMENTATIONS (CHART.JS) ---
+    const ctxLoad = document.getElementById('passengerLoadChart').getContext('2d');
+    new Chart(ctxLoad, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode($analyticsHours); ?>,
+            datasets: [{
+                label: 'High Capacity Routes Load',
+                data: <?php echo json_encode($loadDataHigh); ?>,
+                borderColor: '#00f2fe',
+                backgroundColor: 'rgba(0, 242, 254, 0.05)',
+                borderWidth: 2.5,
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Small Routes Load',
+                data: <?php echo json_encode($loadDataMedium); ?>,
+                borderColor: '#fec163',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 10 } } },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 10 } } }
+            }
+        }
+    });
+
+    const ctxPunctual = document.getElementById('routePunctualityChart').getContext('2d');
+    new Chart(ctxPunctual, {
+        type: 'bar',
+        data: {
+            labels: <?php echo json_encode(array_keys($routeDelayMinutes)); ?>,
+            datasets: [{
+                label: 'Accumulated Latency (Mins)',
+                data: <?php echo json_encode(array_values($routeDelayMinutes)); ?>,
+                backgroundColor: function(context) {
+                    const val = context.raw;
+                    return val > 10 ? 'rgba(255, 75, 43, 0.8)' : 'rgba(0, 255, 135, 0.8)';
+                },
+                borderRadius: 5,
+                barThickness: 15
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 10 } } },
+                y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 11, weight: '600' } } }
+            }
+        }
+    });
+
+    // --- LEAFLET MAP & SIMULATION LOGIC ---
     const DEFAULT_CENTER = [6.4310, 100.4290];
     const DEFAULT_ZOOM = 13;
 
@@ -596,9 +716,8 @@ foreach ($transportRoutes as $route) {
         });
     });
 
-    // TABLE JAVASCRIPT FILTER ENGINE
+    // TABLE INTERACTION & FILTERING ENGINE
     function filterTransitTable(statusCriterion) {
-        // Handle tab active color styling switching
         const targetButtons = document.querySelectorAll('.filter-btn');
         targetButtons.forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
@@ -662,7 +781,7 @@ foreach ($transportRoutes as $route) {
         }
     }
 
-    // Dynamic telemetry engine tracking simulation loop
+    // Dynamic Tracking Thread Core Loop
     setInterval(() => {
         liveFleetTelemetry.forEach((vehicle) => {
             vehicle.currentIndex += (vehicle.speedFactor * vehicle.direction);
