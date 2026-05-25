@@ -915,7 +915,6 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
                 <button id="menuToggleBtn" class="menu-toggle-btn glass-panel"><i class="fa-solid fa-bars"></i></button>
                 <div class="weather-toggle">
                     <button class="w-toggle-btn active">Forecast</button>
-                    <button class="w-toggle-btn">Air quality</button>
                 </div>
             </div>
             
