@@ -163,7 +163,7 @@ function badgeClass(string $value): string {
         <div class="brand">
             <div class="brand-logo"><i class="fa-solid fa-location-dot"></i></div>
             <div>
-                <h4>Changlun City</h4>
+                <hf4>Changlun City</h4>
                 <span>Command Center</span>
             </div>
         </div>
