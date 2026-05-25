@@ -96,7 +96,7 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
         display: flex; 
         flex-direction: column; 
         height: 100vh; 
-        min-width: 0; /* Prevents flex children from blowing out width */
+        min-width: 0; 
         overflow: hidden; 
         transition: padding 0.4s;
     }
@@ -106,18 +106,9 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
     .topbar-left { display: flex; align-items: center; gap: 15px; }
     
     .menu-toggle-btn {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: var(--text);
-        width: 45px;
-        height: 45px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: 0.3s ease;
-        font-size: 18px;
+        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text); width: 45px; height: 45px; border-radius: 12px; display: flex;
+        align-items: center; justify-content: center; cursor: pointer; transition: 0.3s ease; font-size: 18px;
     }
     .menu-toggle-btn:hover { background: rgba(0, 242, 254, 0.2); color: var(--primary); border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
 
@@ -131,7 +122,7 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
         grid-template-columns: repeat(4, 1fr);
         gap: 15px;
         margin-bottom: 15px;
-        flex-shrink: 0; /* Protects top row from getting crushed */
+        flex-shrink: 0; 
     }
     .stat-card { display: flex; align-items: center; color: var(--text); padding: 12px 15px; transition: 0.3s; position: relative; overflow: hidden; cursor: pointer; }
     .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 10px 25px rgba(0, 242, 254, 0.15); color: var(--text); }
@@ -143,16 +134,15 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
     .stat-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 2px; line-height: 1; }
     .stat-card p { color: var(--muted); font-size: 11px; margin: 0; white-space: nowrap; }
 
-    /* MAIN SPLIT CONTENT - Changed to Flex to enforce min-height: 0 */
+    /* MAIN SPLIT CONTENT */
     .split-content { 
         display: flex; 
         gap: 15px; 
         flex: 1; 
-        min-height: 0; /* The magic property that prevents bottom cutoff */
+        min-height: 0; 
         min-width: 0; 
     }
 
-    /* BOTH PANELS MUST BE FLEX EQUAL */
     .cctv-panel, .map-wrapper { 
         flex: 1; 
         display: flex; 
@@ -167,7 +157,6 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
     .panel-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
     .status-chip { padding: 4px 10px; border-radius: 6px; font-size: 10px; background: rgba(255, 75, 43, 0.15); color: var(--danger); font-weight: 600; text-transform: uppercase; border: 1px solid rgba(255, 75, 43, 0.3); }
 
-    /* Ensure exactly 2 equal rows to prevent vertical blowout */
     .cctv-grid-2x2 { 
         display: grid; 
         grid-template-columns: 1fr 1fr; 
@@ -176,9 +165,23 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
         flex: 1; 
         min-height: 0; 
     }
-    .cctv-card { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; min-height: 0; }
-    .cctv-screen { flex: 1; min-height: 0; border-radius: 8px; background: #000; position: relative; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; }
-    .cctv-video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(80%) contrast(120%) brightness(70%) sepia(20%) hue-rotate(180deg); }
+    
+    .cctv-card { 
+        background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); 
+        border-radius: 12px; padding: 6px; display: flex; flex-direction: column; min-height: 0; 
+    }
+    
+    .cctv-screen { 
+        flex: 1; min-height: 0; border-radius: 8px; background: #000; 
+        position: relative; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; 
+    }
+    
+    /* THE FIX: Absolute position forces the video to respect the grid cell size, stopping it from cutting off the bottom! */
+    .cctv-video { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; 
+        filter: grayscale(80%) contrast(120%) brightness(70%) sepia(20%) hue-rotate(180deg); 
+    }
+    
     .cctv-screen::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 3px); pointer-events: none; }
     .live-badge { position: absolute; top: 6px; left: 6px; z-index: 2; background: rgba(255, 75, 43, 0.9); color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; display: flex; align-items: center; gap: 4px; box-shadow: 0 0 10px rgba(255, 75, 43, 0.5); }
     .live-dot { width: 5px; height: 5px; background: white; border-radius: 50%; animation: blink 1s infinite; }
@@ -340,29 +343,15 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // -----------------------------------------------------
-    // DRAWER MENU LOGIC
-    // -----------------------------------------------------
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebar = document.getElementById('appSidebar');
 
     menuToggleBtn.addEventListener('click', () => {
-        if (window.innerWidth > 900) {
-            sidebar.classList.toggle('collapsed');
-        } else {
-            sidebar.classList.toggle('active-mobile');
-        }
-
-        // Wait for the slide animation (0.4s) to finish, then recalculate map layout
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 400); 
+        if (window.innerWidth > 900) { sidebar.classList.toggle('collapsed'); } 
+        else { sidebar.classList.toggle('active-mobile'); }
+        setTimeout(() => { map.invalidateSize(); }, 400); 
     });
 
-
-    // -----------------------------------------------------
-    // MAP INITIALIZATION
-    // -----------------------------------------------------
     var map = L.map('cityMap', { zoomControl: false }).setView([6.4340, 100.4285], 14);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -371,7 +360,6 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // CHANGUN BOUNDARY OUTLINE
     var changlunAreaCoordinates = [
         [6.4520, 100.4120], [6.4550, 100.4350], [6.4400, 100.4500], 
         [6.4180, 100.4420], [6.4140, 100.4250], [6.4250, 100.4080]
@@ -381,7 +369,6 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
         weight: 3, dashArray: '5, 5', lineJoin: 'round'
     }).addTo(map);
 
-    // MARKER DATA & HOVER LOGIC
     var pointsOfInterest = [
         { name: "Taman Awam Changlun", cat: "attractive", lat: 6.4365, lng: 100.4220, desc: "Local recreational park and public green space.", color: "#00f2fe" },
         { name: "Laman Kayu Changlun", cat: "attractive", lat: 6.4312, lng: 100.4245, desc: "Popular local landmark and community gathering spot.", color: "#00f2fe" },
@@ -415,7 +402,6 @@ $avgFlow = count($trafficSensors) > 0 ? round($totalFlow / count($trafficSensors
         marker.addTo(mapLayers[point.cat]);
     });
 
-    // FILTER BUTTON LOGIC
     document.querySelectorAll('.filter-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var category = this.getAttribute('data-cat');
