@@ -415,12 +415,6 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
         transition: 0.3s;
     }
 
-    .forecast-pill:hover {
-        background: rgba(255, 255, 255, 0.05);
-        transform: translateY(-3px);
-        border-color: var(--primary);
-    }
-
     .f-day {
         font-size: 12px;
         font-weight: 500;
@@ -594,20 +588,6 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
         width: 100%;
         height: 100%;
         z-index: 1;
-    }
-
-    .map-detail-card {
-        position: absolute;
-        left: 16px;
-        bottom: 16px;
-        z-index: 1000;
-        width: 252px;
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 18px;
-        padding: 14px;
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-        backdrop-filter: blur(10px);
     }
 
     .map-detail-kicker {
