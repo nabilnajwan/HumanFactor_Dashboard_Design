@@ -160,10 +160,10 @@ function badgeClass(string $value): string {
 <div class="dashboard">
 
     <aside class="sidebar" id="appSidebar">
-        <div class="brand">
-            <div class="brand-logo"><i class="fa-solid fa-location-dot"></i></div>
+         <div class="brand">
+            <div class="brand-logo"><i class="fa-solid fa-cloud-bolt"></i></div>
             <div>
-                <hf4>Changlun City</h4>
+                <h4>Changlun City</h4>
                 <span>Command Center</span>
             </div>
         </div>
@@ -266,7 +266,7 @@ function badgeClass(string $value): string {
                             </td>
                             <td><?php echo htmlspecialchars($sensor['speed']); ?></td>
                             <td class="text-warning"><?php echo htmlspecialchars($sensor['delay']); ?></td>
-                            <td class="text-muted" style="font-size: 12px; max-width: 200px;"><?php echo htmlspecialchars($sensor['note']); ?></td>
+                            <td class="text-white" style="font-size: 12px; max-width: 200px;"><?php echo htmlspecialchars($sensor['note']); ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

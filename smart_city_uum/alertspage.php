@@ -53,7 +53,38 @@ $crimeAlerts = [
         'lat' => 6.4250,
         'lng' => 100.4180,
     ],
+    [
+        'id' => 'ALT-006',
+        'type' => 'Forced Entry',
+        'location' => 'Maybank ATM Entrance',
+        'status' => 'Critical',
+        'time' => '03:10 AM',
+        'description' => 'Secondary glass door shattered - entry confirmed',
+        'lat' => 6.4322,
+        'lng' => 100.4288,
+    ],
+    [
+        'id' => 'ALT-007',
+        'type' => 'Loitering',
+        'location' => 'Petronas Station Perimeter',
+        'status' => 'Notice',
+        'time' => '03:25 AM',
+        'description' => 'Group gathering in dark zone near storage tanks',
+        'lat' => 6.4405,
+        'lng' => 100.4225,
+    ],
 ];
+
+// Sort alerts by priority: Critical > Warning > Notice
+usort($crimeAlerts, function($a, $b) {
+    $priorities = [
+        'critical' => 0,
+        'warning' => 1,
+        'notice' => 2,
+        'normal' => 3
+    ];
+    return $priorities[strtolower($a['status'])] <=> $priorities[strtolower($b['status'])];
+});
 
 $cctvSurveillance = [
     [
@@ -78,7 +109,7 @@ $cctvSurveillance = [
         'area' => 'C-Mart Complex',
         'status' => 'Recording',
         'event' => 'Panic Alert',
-        'video_url' => 'assets/cctv3.mp4',
+        'video_url' => 'assets/robbery.webm',
     ],
     [
         'camera' => 'SEC-CAM04',
@@ -203,6 +234,23 @@ function patrolStatusClass(string $status): string {
     .date-box { padding: 10px 16px; font-size: 13px; }
 
     .section-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* FILTER STYLES */
+    .filter-btn-group {
+        display: flex;
+        gap: 6px;
+        background: rgba(15, 23, 42, 0.6);
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .filter-btn {
+        background: transparent; border: none; color: var(--muted);
+        padding: 4px 10px; font-size: 10px; font-weight: 600;
+        border-radius: 7px; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s;
+    }
+    .filter-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .filter-btn.active { background: rgba(255, 75, 43, 0.15); color: var(--danger); }
 
     /* WEATHER-PAGE STYLE LAYOUT */
     .alerts-grid {
@@ -380,6 +428,12 @@ function patrolStatusClass(string $status): string {
         box-shadow: 0 0 30px rgba(0, 255, 135, 0.4);
         animation: cctvPulse 1.5s infinite; display: flex; flex-direction: column;
     }
+    
+    /* Hide non-expanded monitors when a focus is active */
+    .cctv-surveillance.expanded .cctv-monitor:not(.cctv-expanded) {
+        display: none !important;
+    }
+
     .cctv-surveillance.expanded .cctv-header { opacity: 0; pointer-events: none; }
     .cctv-surveillance.expanded .cctv-monitor.cctv-expanded {
         display: flex; flex-direction: column; flex: 1; border: none; border-radius: 0;
@@ -646,11 +700,11 @@ function patrolStatusClass(string $status): string {
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                         <div class="cctv-grid" id="cctvGrid">
-                            <?php foreach ($cctvSurveillance as $cam): ?>
-                            <div class="cctv-monitor">
+                            <?php foreach ($cctvSurveillance as $index => $cam): ?>
+                            <div class="cctv-monitor" onclick="expandCamera(<?php echo $index; ?>)" style="cursor: pointer;">
                                 <div class="cctv-monitor-screen">
                                     <video autoplay loop muted playsinline>
-                                        <source src="<?php echo htmlspecialchars($cam['video_url']); ?>" type="video/mp4">
+                                        <source src="<?php echo htmlspecialchars($cam['video_url']); ?>">
                                     </video>
                                     <span class="recording-badge"><span class="rec-dot"></span>REC</span>
                                     <span class="area-label"><?php echo htmlspecialchars($cam['area']); ?></span>
@@ -676,7 +730,14 @@ function patrolStatusClass(string $status): string {
                 <div class="alerts-panel">
                     <div class="alerts-header">
                         <h3><i class="fa-solid fa-list-ul text-danger me-2"></i>Active Alerts</h3>
-                        <span style="font-size: 11px; color: var(--muted);"><?php echo count($crimeAlerts); ?> total</span>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="filter-btn-group">
+                                <button class="filter-btn active" onclick="filterAlerts('all', this)">All</button>
+                                <button class="filter-btn" onclick="filterAlerts('critical', this)">Critical</button>
+                                <button class="filter-btn" onclick="filterAlerts('warning', this)">Warning</button>
+                            </div>
+                            <span style="font-size: 11px; color: var(--muted);"><?php echo count($crimeAlerts); ?> total</span>
+                        </div>
                     </div>
                     <div class="alerts-list">
                         <?php foreach ($crimeAlerts as $alert):
@@ -798,6 +859,13 @@ function patrolStatusClass(string $status): string {
     function expandCamera(index) {
         var container = document.getElementById('cctvSurveillance');
         var monitors = container.querySelectorAll('.cctv-monitor');
+        
+        // If already expanded on this index, collapse it
+        if (monitors[index] && monitors[index].classList.contains('cctv-expanded')) {
+            collapseCctv();
+            return;
+        }
+
         monitors.forEach(function(m) { m.classList.remove('cctv-expanded'); });
         container.classList.remove('expanded');
         document.querySelectorAll('.alert-card').forEach(function(c) { c.classList.remove('alert-cam-highlight'); });
@@ -807,6 +875,20 @@ function patrolStatusClass(string $status): string {
             container.classList.add('expanded');
             document.querySelectorAll('.alert-card[data-cam="' + index + '"]').forEach(function(c) { c.classList.add('alert-cam-highlight'); });
         }
+    }
+
+    function filterAlerts(priority, btnElement) {
+        const btns = document.querySelectorAll('.filter-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+
+        document.querySelectorAll('.alert-card').forEach(card => {
+            if (priority === 'all' || card.classList.contains(priority)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
     }
 
     function collapseCctv() {
