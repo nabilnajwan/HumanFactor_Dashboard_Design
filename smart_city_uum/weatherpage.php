@@ -368,6 +368,10 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
         display: flex;
         flex-direction: column;
         min-width: 0;
+        background: var(--panel-dark);
+        border: 1px solid var(--card-border);
+        border-radius: 22px;
+        padding: 16px 18px 18px;
     }
 
     .section-title {
@@ -380,12 +384,12 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
     }
 
     .forecast-scroll {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 10px;
-        overflow-x: auto;
+        overflow: hidden;
         padding-bottom: 4px;
         flex: 1;
-        align-items: stretch;
     }
 
     .forecast-scroll::-webkit-scrollbar {
@@ -401,9 +405,8 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
         background: var(--panel-dark);
         border: 1px solid var(--card-border);
         border-radius: 32px;
-        min-width: 72px;
-        max-width: 82px;
-        flex: 1 1 0;
+        min-width: 0;
+        width: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -434,68 +437,113 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
         font-weight: 600;
     }
 
+    /* === NEW CHANCE OF RAIN CHART DESIGN === */
     .rain-chart-card {
-        width: 220px;
+        width: 250px;
         background: var(--panel-dark);
         border: 1px solid var(--card-border);
         border-radius: 22px;
-        padding: 18px;
+        padding: 20px;
         display: flex;
         flex-direction: column;
         flex-shrink: 0;
     }
 
-    .chart-legend {
-        font-size: 11px;
-        color: var(--muted);
-        margin: 10px 0 0;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+    .rain-chart-card .section-title {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text);
     }
 
-    .chart-container {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
+    .rain-chart-wrapper {
+        position: relative;
         flex: 1;
-        margin-top: 10px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        margin-top: 15px;
+    }
+
+    .y-axis-labels {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding-bottom: 22px; /* Leave room for X-axis labels */
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 500;
+        padding-right: 12px;
+        z-index: 3;
+    }
+
+    .chart-content {
+        flex: 1;
         position: relative;
     }
 
-    .bar-group {
+    .guide-lines-container {
+        position: absolute;
+        top: 7px; /* Align with middle of first Y-label */
+        bottom: 29px; /* Align with middle of last Y-label */
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        z-index: 1;
+    }
+
+    .guide-line {
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+        width: 100%;
+    }
+
+    .bars-container {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        z-index: 2;
+    }
+
+    .bar-column {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
-        width: 100%;
         height: 100%;
-        justify-content: flex-end;
-        position: relative;
+        width: 100%;
     }
 
-    .bar {
+    .bar-track-bg {
         width: 6px;
-        background: var(--muted);
-        border-radius: 10px;
-        transition: 0.3s;
+        flex: 1;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 6px;
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 8px; /* Space above X-axis label */
     }
 
-    .bar.high {
-        background: var(--primary);
-        box-shadow: 0 0 10px var(--primary);
+    .bar-fill-value {
+        width: 100%;
+        background: #c2e9fb;
+        border-radius: 6px;
+        box-shadow: 0 0 10px rgba(194, 233, 251, 0.6);
+        transition: height 0.5s ease;
     }
 
-    .bar-label {
-        position: absolute;
-        bottom: -20px;
-        font-size: 8px;
+    .x-label {
+        font-size: 9px;
         color: var(--muted);
         font-weight: 600;
+        height: 14px;
+        line-height: 14px;
+        white-space: nowrap;
     }
 
+    /* === MAP & NEARBY SECTION === */
     .weather-bottom-row {
         display: flex;
         gap: 12px;
@@ -732,11 +780,6 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
         border-color: var(--primary);
     }
 
-    .city-card:focus-visible {
-        outline: 2px solid rgba(0, 242, 254, 0.65);
-        outline-offset: 2px;
-    }
-
     .city-card.active {
         background: rgba(79, 172, 254, 0.12);
         border-color: rgba(0, 242, 254, 0.65);
@@ -790,15 +833,8 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
     }
 
     @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(50px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
     }
 
     .popup-alert h6 {
@@ -822,84 +858,25 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
     }
 
     @media (max-width: 1200px) {
-        .weather-top-row {
-            flex-wrap: wrap;
-            height: auto;
-        }
-
-        .forecast-container {
-            width: 100%;
-        }
-
-        .forecast-pill {
-            min-width: 76px;
-            max-width: none;
-            flex: 0 0 76px;
-        }
-
-        .rain-chart-card {
-            width: 100%;
-            height: 200px;
-        }
-
-        .weather-bottom-row {
-            flex-direction: column;
-        }
-
-        .nearby-panel {
-            width: 100%;
-            height: auto;
-        }
-
-        .map-panel {
-            min-height: 400px;
-        }
-
-        .map-detail-card {
-            width: calc(100% - 32px);
-            max-width: 320px;
-        }
-
-        body,
-        .dashboard,
-        .main {
-            height: auto;
-            overflow: auto;
-            min-height: 100vh;
-        }
+        .weather-top-row { flex-wrap: wrap; height: auto; }
+        .forecast-container { width: 100%; }
+        .forecast-scroll { grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); }
+        .rain-chart-card { width: 100%; height: 200px; }
+        .weather-bottom-row { flex-direction: column; }
+        .nearby-panel { width: 100%; height: auto; }
+        .map-panel { min-height: 400px; }
+        .map-detail-card { width: calc(100% - 32px); max-width: 320px; }
+        body, .dashboard, .main { height: auto; overflow: auto; min-height: 100vh; }
     }
 
     @media (max-width: 900px) {
-        .sidebar {
-            position: fixed;
-            margin-left: -260px;
-            height: 100vh;
-        }
-
-        .sidebar.active-mobile {
-            margin-left: 0;
-            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .weather-top-row {
-            flex-direction: column;
-        }
-
-        .today-card {
-            width: 100%;
-        }
-
-        .forecast-pill {
-            flex: 0 0 84px;
-        }
-
-        .map-panel-header {
-            align-items: flex-start;
-        }
-
-        .map-status-pill {
-            width: 100%;
-        }
+        .sidebar { position: fixed; margin-left: -260px; height: 100vh; }
+        .sidebar.active-mobile { margin-left: 0; box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5); }
+        .weather-top-row { flex-direction: column; }
+        .today-card { width: 100%; }
+        .forecast-scroll { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
+        .map-panel-header { align-items: flex-start; }
+        .map-status-pill { width: 100%; }
     }
 </style>
 </head>
@@ -941,7 +918,7 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
                     <button class="w-toggle-btn">Air quality</button>
                 </div>
             </div>
-
+            
             <div class="date-box glass-panel">
                 <i class="fa-regular fa-calendar me-2"></i> <?php echo date('D, d M Y'); ?>
             </div>
@@ -949,6 +926,7 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
 
         <div class="weather-grid">
             <div class="weather-top-row">
+                
                 <div class="today-card">
                     <div>
                         <div class="today-header">
@@ -986,32 +964,47 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
                 </div>
 
                 <div class="rain-chart-card">
-                    <div class="section-title" style="margin:0;">Chance of rain</div>
-                    <div class="chart-legend">
-                        <span><i class="fa-solid fa-minus me-2"></i>Heavy</span>
-                        <span><i class="fa-solid fa-minus me-2"></i>Sunny</span>
-                    </div>
-
-                    <div class="chart-container">
-                        <?php
-                        $hours = ['10AM', '11AM', '12PM', '01PM', '02PM', '03PM'];
-                        $heights = ['40%', '60%', '90%', '70%', '40%', '20%'];
-                        for ($i = 0; $i < 6; $i++):
-                        ?>
-                            <div class="bar-group">
-                                <div class="bar <?php echo (int) $heights[$i] > 60 ? 'high' : ''; ?>" style="height: <?php echo htmlspecialchars($heights[$i]); ?>;"></div>
-                                <span class="bar-label"><?php echo htmlspecialchars($hours[$i]); ?></span>
+                    <h3 class="section-title">Chance of rain</h3>
+                    
+                    <div class="rain-chart-wrapper">
+                        <div class="y-axis-labels">
+                            <span>Rainy</span>
+                            <span>Cloudy</span>
+                            <span>Sunny</span>
+                        </div>
+                        
+                        <div class="chart-content">
+                            <div class="guide-lines-container">
+                                <div class="guide-line"></div>
+                                <div class="guide-line"></div>
+                                <div class="guide-line"></div>
                             </div>
-                        <?php endfor; ?>
+                            
+                            <div class="bars-container">
+                                <?php
+                                $hours = ['10AM', '11AM', '12AM', '01PM', '02PM', '03PM'];
+                                $heights = ['55%', '45%', '85%', '35%', '75%', '30%'];
+                                for ($i = 0; $i < 6; $i++):
+                                ?>
+                                    <div class="bar-column">
+                                        <div class="bar-track-bg">
+                                            <div class="bar-fill-value" style="height: <?php echo htmlspecialchars($heights[$i]); ?>;"></div>
+                                        </div>
+                                        <span class="x-label"><?php echo htmlspecialchars($hours[$i]); ?></span>
+                                    </div>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
             <div class="weather-bottom-row">
                 <div class="map-panel">
                     <div class="map-panel-header">
                         <div class="section-title mb-0">
-                            <span>Weather Heatmap</span>
+                            <span>Regional Radar</span>
                         </div>
                         <div class="map-status-pill"><i class="fa-solid fa-hand-pointer me-2"></i>Click any glowing zone for details</div>
                     </div>
@@ -1038,8 +1031,7 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
                     <div class="section-title mb-3">
                         <span>Nearby Districts</span>
                     </div>
-                    <div class="nearby-hint">Select a district to jump straight to its strongest weather zone.</div>
-
+                    
                     <div class="nearby-list">
                         <?php foreach ($nearbyDistricts as $city): ?>
                             <div
@@ -1048,10 +1040,6 @@ $currentTemperature = explode(' ', (string) $weather['temperature'])[0];
                                 role="button"
                                 aria-pressed="false"
                                 data-city="<?php echo htmlspecialchars($city['city']); ?>"
-                                data-status="<?php echo htmlspecialchars($city['status']); ?>"
-                                data-temp="<?php echo $city['temp']; ?>"
-                                data-zone="<?php echo htmlspecialchars($city['zone']); ?>"
-                                data-summary="<?php echo htmlspecialchars($city['summary']); ?>"
                             >
                                 <div class="city-info">
                                     <h5><?php echo htmlspecialchars($city['city']); ?></h5>
